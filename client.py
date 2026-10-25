@@ -35,7 +35,7 @@ class Client:
 
         print(f"client {self.id} stopped")
 
-    def GetProduct(self , product_id: int) -> "test_pb2.GetProductResponse":
+    def GetProduct(self , product_id: int) -> test_pb2.GetProductResponse | grpc.RpcError:
 
         req = test_pb2.GetProductRequest(product_id=product_id)
 
@@ -51,11 +51,13 @@ class Client:
 
             res = self.GetProduct(product_id=product_id)
 
-        except grpc.RpcError:
+        except grpc.RpcError as e:
 
             print(f"server of service {service_A.name} is NOT started yet")
 
-            raise
+            # raise
+
+            res = e
 
         return res
 
