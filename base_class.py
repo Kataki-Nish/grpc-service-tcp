@@ -5,8 +5,6 @@ import test_pb2
 
 import my_code
 
-from typeguard import typechecked
-
 from threading import RLock
 
 from typing import TYPE_CHECKING
@@ -17,8 +15,6 @@ if TYPE_CHECKING:
 
 
 
-
-@typechecked
 class Base_class(test_pb2_grpc.ProductServiceServicer):
 
     def __init__(self):

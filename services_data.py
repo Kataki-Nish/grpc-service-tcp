@@ -8,4 +8,4 @@ class Service_Data:
     res_auth: str
 
 
-service_A = Service_Data(name="A",res_auth="127.0.0.1:5050")
+service_A = Service_Data(name="A",res_auth="service_a1:5050")

@@ -33,7 +33,13 @@ def serve(service_name: str,resolver_authority: str) -> Server_BC:
 
         resolver_authority = "unix://" + resolver_authority
 
-    server.add_insecure_port(resolver_authority)
+    port = server.add_insecure_port(resolver_authority)
+
+    # debug
+
+    print(f"DEBUG: add_insecure_port returned: {port}")
+
+    # -----
 
     print(f"server of service {service_name} created")
 
