@@ -65,9 +65,9 @@ class Service:
 
             self.thread.join()
 
-        if self.thread.is_alive():
+            if self.thread.is_alive():
 
-            raise Exception(f"Error: server of service {self.name} cant be stopped")
+                raise Exception(f"Error: server of service {self.name} cant be stopped")
 
         self.thread = None
         
