@@ -11,7 +11,7 @@ services:
 
       context: .
 
-      dockerfile: /docker/service_a/Dockerfile
+      dockerfile: ./docker/service_a/Dockerfile
 
     image: service_a1
 
@@ -31,7 +31,7 @@ services:
 
       context: .
 
-      dockerfile: /docker/client_0/Dockerfile
+      dockerfile: ./docker/client_0/Dockerfile
     
     image: client_0
 
@@ -39,3 +39,46 @@ services:
 
     depends_on:
       - service_a1
+
+  service_b1:
+
+    environment:
+      - PYTHONUNBUFFERED=1
+    
+    build:
+
+      context: .
+
+      dockerfile: ./docker/service_b/Dockerfile
+    
+    image: service_b1
+
+    container_name: service_b1
+
+    volumes:
+      - grpc_sockets:/tmp
+  
+  client_1:
+
+    environment:
+      - PYTHONUNBUFFERED=1
+    
+    build:
+
+      context: .
+
+      dockerfile: ./docker/client_1/Dockerfile
+
+    image: client_1
+
+    container_name: client_1
+
+    volumes:
+      - grpc_sockets:/tmp
+    
+    depends_on:
+      - service_b1
+
+volumes:
+
+  grpc_sockets:

@@ -3,11 +3,12 @@ from client import Client
 
 import signal
 
+from services_data import service_A
 
 from threading import Event
 
 
-c = Client()
+c = Client(service_name=service_A.name,res_auth=service_A.res_auth)
 
 stop_event = Event()
 

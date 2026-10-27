@@ -5,8 +5,6 @@ import test_pb2
 
 import test_pb2_grpc
 
-from services_data import service_A
-
 from time import sleep
 
 from threading import Thread
@@ -15,11 +13,19 @@ class Client:
 
     id = 0
 
-    def __init__(self) -> None:
+    def __init__(self , service_name: str , res_auth: str) -> None:
 
         self.id = Client.id
 
         Client.id += 1
+
+        self.service_name = service_name
+
+        if not ":" in res_auth:
+
+            res_auth = "unix://" + res_auth
+
+        self.res_auth = res_auth
 
         self.testing = False
 
@@ -31,7 +37,7 @@ class Client:
 
         print(f"starting of client {self.id} ...")
 
-        self.channel = grpc.insecure_channel(target=service_A.res_auth)
+        self.channel = grpc.insecure_channel(target=self.res_auth)
 
         self.client = test_pb2_grpc.ProductServiceStub(channel=self.channel)
 
@@ -55,65 +61,87 @@ class Client:
 
         print(f"client {self.id} stopped")
 
-    def GetProduct(self , product_id: int) -> test_pb2.GetProductResponse | grpc.RpcError:
+    def GetProduct(self , product_id: int , retry_count: int = 3) -> test_pb2.GetProductResponse | grpc.RpcError | TimeoutError:
 
-        req = test_pb2.GetProductRequest(product_id=product_id)
+        while retry_count > 0:
 
-        try:
+            req = test_pb2.GetProductRequest(product_id=product_id)
 
-            res = self.client.GetProduct(req, timeout=2)
+            try:
 
-        except TimeoutError:
+                res = self.client.GetProduct(req, timeout=2)
 
-            res = self.GetProduct(product_id=product_id)
+                return res
 
-        except ValueError:
+            except TimeoutError:
 
-            print("channel is closed")
+                retry_count -= 1
 
-            self.start_run()
+                continue
+            
+            except ValueError:
 
-            res = self.GetProduct(product_id=product_id)
+                print("channel is closed")
 
-        except grpc.RpcError as e:
+                self.start_run()
 
-            print(f"server of service {service_A.name} is NOT started yet")
+                continue
 
-            # raise
+            except grpc.RpcError as e:
 
-            res = e
+                print(f"server of service {self.service_name} is NOT started yet")
 
-        return res
+                # raise
 
-    def UpdatePrice(self , product_id: int , new_price: float) -> "test_pb2.UpdatePriceResponse":
+                res = e
 
-        req = test_pb2.UpdatePriceRequest(product_id=product_id,new_price=new_price)
+                return res
 
-        try:
+        else:
 
-            res = self.client.UpdatePrice(req,timeout=2)
+            return TimeoutError("Error: retry_count finished")
 
-        except TimeoutError:
 
-            res = self.GetProduct(product_id=product_id)
+    def UpdatePrice(self , product_id: int , new_price: float , retry_count: int = 3) -> test_pb2.UpdatePriceResponse | grpc.RpcError | TimeoutError:
 
-        except ValueError:
+        while retry_count > 0:
 
-            print("channel is closed")
+            req = test_pb2.UpdatePriceRequest(product_id=product_id,new_price=new_price)
 
-            self.start_run()
+            try:
 
-            res = self.GetProduct(product_id=product_id)
+                res = self.client.UpdatePrice(req,timeout=2)
 
-        except grpc.RpcError as e:
+                return res
 
-            print(f"server of service {service_A.name} is NOT started yet")
+            except TimeoutError:
 
-            # raise
+                retry_count -= 1
 
-            res = e
+                continue
+            
+            except ValueError:
 
-        return res
+                print("channel is closed")
+
+                self.start_run()
+
+                continue
+
+            except grpc.RpcError as e:
+
+                print(f"server of service {self.service_name} is NOT started yet")
+
+                # raise
+
+                res = e
+
+                return res
+
+        else:
+
+            return TimeoutError("Error: retry_count finished")
+
 
 
 
