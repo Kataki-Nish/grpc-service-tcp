@@ -10,6 +10,8 @@ from concurrent import futures
 
 from dataclasses import dataclass
 
+import os
+
 
 @dataclass
 class Server_BC:
@@ -32,6 +34,10 @@ def serve(service_name: str,resolver_authority: str) -> Server_BC:
     if ":" not in resolver_authority:
 
         resolver_authority = "unix://" + resolver_authority
+
+        if os.path.exists(resolver_authority):
+
+            os.remove(resolver_authority)
 
     port = server.add_insecure_port(resolver_authority)
 
